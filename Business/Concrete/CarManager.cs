@@ -1,7 +1,13 @@
 ﻿using Business.Abstract;
+using Business.Constants;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
+using Core.CrossCuttingConcerns.Validation;
+using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
 using Entities.DTOs;
+using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,53 +23,53 @@ namespace Business.Concrete
         }
 
        
-        public void Add(Car car)
+       [ValidationAspect(typeof(CarValidator))]
+        public IResult Add(Car car)
         {
+                        
+             _carDal.Add(car);
+            return new SuccessResult(Messages.CarAdded);            
+
+        }
+
+        public IResult Delete(Car car)
+        {
+            _carDal.Delete(car);
+            return new SuccessResult("Araç silindi");
+        }
+
+        public IDataResult <List<Car>> GetAll()
+        {
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll(),"Araçlar listelendi");
+        }
+
+        public IDataResult <Car> GetById(int id)
+        {
+            return new SuccessDataResult<Car>(_carDal.Get(c=>c.Id==id));
+        }
+
+        public IDataResult<List<CarDetailDto>> GetCarDetails()
+        {
+            return new SuccessDataResult<List<CarDetailDto>>( _carDal.GetCarDetails());
+        }
+
+        public IDataResult <List<Car>> GetCarsByBrandId(int id)
+        {
+            return new SuccessDataResult<List<Car>>(_carDal.GetAll(c => c.BrandId == id), "Araçlar listelendi.");
+        }
+
+        public IDataResult <List<Car>> GetCarsByColorId(int id)
+        {
+            return  new SuccessDataResult <List<Car>> (_carDal.GetAll(c=>c.ColorId==id),"Araçlar listelendi");
+        }
+
+        public IResult Update(Car car)
+        {
+            _carDal.Update(car);
+            return new SuccessResult("Araç silindi");
             
-            if (car.ModelName.Length>1 && car.DailyPrice>0 )
-            {
-                _carDal.Add(car);
-                Console.WriteLine("Araç eklendi :"+car.ModelName);
-            }else
-            {            
-                Console.WriteLine("Araç modeli en az 2 karakter ve günlük fiyatı 0'dan fazla olmalıdır.");
-            }
-            
         }
 
-        public void Delete(Car car)
-        {
-            throw new NotImplementedException();
-        }
 
-        public List<Car> GetAll()
-        {
-            return _carDal.GetAll();
-        }
-
-        public List<Car> GetById(int id)
-        {
-            return _carDal.GetAll(p => p.Id == id);
-        }
-
-        public List<CarDetailDto> GetCarDetails()
-        {
-            return _carDal.GetCarDetails();
-        }
-
-        public List<Car> GetCarsByBrandId(int id)
-        {
-            return _carDal.GetAll(c => c.BrandId == id);
-        }
-
-        public List<Car> GetCarsByColorId(int id)
-        {
-            return _carDal.GetAll(c=>c.ColorId==id);
-        }
-
-        public void Update(Car car)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
